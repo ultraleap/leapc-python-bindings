@@ -1,0 +1,2 @@
+include src/leap/leapc/*
+include src/leap/scripts/*
