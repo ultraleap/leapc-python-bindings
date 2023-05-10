@@ -92,7 +92,7 @@ print(_RESOURCE_DIRECTORY)
 ffibuilder.set_source(
     "_leapc_cffi",
     cffi_src,
-    libraries=["LeapC"],
+    libraries=["LeapC.5"],
     include_dirs=[_RESOURCE_DIRECTORY],
     library_dirs=[_RESOURCE_DIRECTORY],
     extra_link_args=extra_link_args[platform.system()],

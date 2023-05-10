@@ -1,0 +1,7 @@
+dist/
+venv/
+src/leap.egg-info
+src/leap/leapc/*.h
+src/leap/leapc/*.dll
+src/leap/leapc/*.dylib
+src/leap/leapc/*.so

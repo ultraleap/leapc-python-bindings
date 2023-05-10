@@ -12,8 +12,8 @@ with open(os.path.join(_HERE, "README.md"), "r", encoding="utf-8") as fh:
 _RESOURCE_DIRECTORY = os.path.join(_HERE, "src/leap/leapc")
 
 _OS_DEFAULT_INSTALL_LOCATION = {
-    "Windows": "Program Files..",
-    "Linux": "Somewhere",
+    "Windows": "C:/Program Files/Ultraleap/LeapSDK",
+    "Linux": "/usr/share/doc/ultraleap-hand-tracking-service",
     "Darwin": "/Library/Application Support/Ultraleap/LeapSDK"
 }
 
@@ -24,26 +24,41 @@ _OS_SHARED_OBJECT_EXT = {
 }
 
 
-def setup_files():
-    # TODO: Also do something special if environment variable was provided
+def gather_leap_sdk():
+    _USER_DEFINED_INSTALL_LOCATION = os.getenv('LEAPSDK_INSTALL_LOCATION')
+    if _USER_DEFINED_INSTALL_LOCATION is not None:
+        print("User defined install location given, using: " + str(_USER_DEFINED_INSTALL_LOCATION) + " to generate "
+              "bindings.")
+        leapc_header_path = os.path.join(_USER_DEFINED_INSTALL_LOCATION, "include/LeapC.h")
+        libleapc_path = os.path.join(_USER_DEFINED_INSTALL_LOCATION, "lib/libLeapC.5." + _OS_SHARED_OBJECT_EXT[platform.system()])
+    else:
+        leapc_header_path = os.path.join(_OS_DEFAULT_INSTALL_LOCATION[platform.system()], "include/LeapC.h")
+        libleapc_path = os.path.join(_OS_DEFAULT_INSTALL_LOCATION[platform.system()], "lib/libLeapC.5." + _OS_SHARED_OBJECT_EXT[platform.system()])
 
-    leapc_header_path = os.path.join(_OS_DEFAULT_INSTALL_LOCATION[platform.system()], "include/LeapC.h")
-    shutil.copy(leapc_header_path, _RESOURCE_DIRECTORY)
+    # Copy the found header
+    if os.path.exists(leapc_header_path):
+        shutil.copy(leapc_header_path, _RESOURCE_DIRECTORY)
+    else:
+        raise Exception("No LeapC.h found, please ensure you have Ultraleap Gemini Hand Tracking installed, or define "
+                        "LEAPSDK_INSTALL_LOCATION environment variable to point to a LeapSDK directory.")
 
-    # Can't use symlink but we could copy the shared object
-    libleapc_path = os.path.join(_OS_DEFAULT_INSTALL_LOCATION[platform.system()], "lib/libLeapC." + _OS_SHARED_OBJECT_EXT[platform.system()])
+    # Create a symlink for the shared object
     symlink_path = os.path.join(_RESOURCE_DIRECTORY, "libLeapC.5." + _OS_SHARED_OBJECT_EXT[platform.system()])
-
     if os.path.islink(symlink_path):
         os.unlink(symlink_path)
 
     if os.path.exists(symlink_path):
         os.remove(symlink_path)
 
-    os.symlink(libleapc_path, symlink_path)
+    if os.path.exists(libleapc_path):
+        os.symlink(libleapc_path, symlink_path)
+    else:
+        raise Exception("No libLeapC." + str(_OS_SHARED_OBJECT_EXT[platform.system()]) + "found, please ensure you "
+                        "have Ultraleap Gemini Hand Tracking installed, or define LEAPSDK_INSTALL_LOCATION environment "
+                        "variable to point to a LeapSDK directory.")
 
 
-setup_files()
+gather_leap_sdk()
 
 setuptools.setup(
     name="leap",
