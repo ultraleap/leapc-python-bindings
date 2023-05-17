@@ -24,16 +24,25 @@ _OS_SHARED_OBJECT_EXT = {
 }
 
 
+def os_specific_lib_dir(os_name):
+    if os_name == "Windows":
+        # On windows the libs are within the x64 directory
+        return "x64"
+    else:
+        # On other OS's its within the root of lib
+        return ""
+
+
 def gather_leap_sdk():
     _USER_DEFINED_INSTALL_LOCATION = os.getenv('LEAPSDK_INSTALL_LOCATION')
     if _USER_DEFINED_INSTALL_LOCATION is not None:
         print("User defined install location given, using: " + str(_USER_DEFINED_INSTALL_LOCATION) + " to generate "
               "bindings.")
         leapc_header_path = os.path.join(_USER_DEFINED_INSTALL_LOCATION, "include/LeapC.h")
-        libleapc_path = os.path.join(_USER_DEFINED_INSTALL_LOCATION, "lib/libLeapC.5." + _OS_SHARED_OBJECT_EXT[platform.system()])
+        libleapc_path = os.path.join(_USER_DEFINED_INSTALL_LOCATION, "lib", os_specific_lib_dir(platform.system()), "libLeapC.5." + _OS_SHARED_OBJECT_EXT[platform.system()])
     else:
         leapc_header_path = os.path.join(_OS_DEFAULT_INSTALL_LOCATION[platform.system()], "include/LeapC.h")
-        libleapc_path = os.path.join(_OS_DEFAULT_INSTALL_LOCATION[platform.system()], "lib/libLeapC.5." + _OS_SHARED_OBJECT_EXT[platform.system()])
+        libleapc_path = os.path.join(_OS_DEFAULT_INSTALL_LOCATION[platform.system()], "lib", os_specific_lib_dir(platform.system()), "libLeapC.5." + _OS_SHARED_OBJECT_EXT[platform.system()])
 
     # Copy the found header
     if os.path.exists(leapc_header_path):
