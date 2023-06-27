@@ -67,7 +67,9 @@ class Connection:
             listeners = []
         self._listeners = listeners
 
-        self._connection_ptr = self._create_connection(server_namespace, multi_device_aware)
+        self._connection_ptr = self._create_connection(
+            server_namespace, multi_device_aware
+        )
 
         self._poll_timeout = int(poll_timeout * 1000)  # Seconds to milliseconds
         self._response_timeout = int(response_timeout)  # Resp
@@ -110,7 +112,9 @@ class Connection:
         else:
             timeout = int(timeout * 1000)  # Seconds to milliseconds
         event_ptr = ffi.new("LEAP_CONNECTION_MESSAGE*")
-        success_or_raise(libleapc.LeapPollConnection, self._connection_ptr[0], timeout, event_ptr)
+        success_or_raise(
+            libleapc.LeapPollConnection, self._connection_ptr[0], timeout, event_ptr
+        )
         return create_event(event_ptr)
 
     def poll_until(self, event_type, *, timeout=None, individual_poll_timeout=None):
@@ -193,7 +197,9 @@ class Connection:
         :param mode: The mode to set
         :type mode: TrackingMode
         """
-        success_or_raise(libleapc.LeapSetTrackingMode, self._connection_ptr[0], mode.value)
+        success_or_raise(
+            libleapc.LeapSetTrackingMode, self._connection_ptr[0], mode.value
+        )
 
     def get_tracking_mode(self):
         """Get the Server tracking mode
@@ -259,7 +265,9 @@ class Connection:
         :rtype: list(Device)
         """
         count_ptr = ffi.new("uint32_t*")
-        success_or_raise(libleapc.LeapGetDeviceList, self._connection_ptr[0], ffi.NULL, count_ptr)
+        success_or_raise(
+            libleapc.LeapGetDeviceList, self._connection_ptr[0], ffi.NULL, count_ptr
+        )
         devices_ptr = ffi.new("LEAP_DEVICE_REF[]", count_ptr[0])
         success_or_raise(
             libleapc.LeapGetDeviceList, self._connection_ptr[0], devices_ptr, count_ptr
@@ -301,14 +309,18 @@ class Connection:
         :type device: Device
         """
         success_or_raise(
-            libleapc.LeapUnsubscribeEvents, self._connection_ptr[0], device.c_data_device
+            libleapc.LeapUnsubscribeEvents,
+            self._connection_ptr[0],
+            device.c_data_device,
         )
 
     @staticmethod
     def _create_connection(server_namespace=None, multi_device_aware=False):
         # Create the connection
         connection_ptr = ffi.new("LEAP_CONNECTION*")
-        ffi_server_namespace = ffi.new("char []", json.dumps(server_namespace).encode("ascii"))
+        ffi_server_namespace = ffi.new(
+            "char []", json.dumps(server_namespace).encode("ascii")
+        )
 
         config = ConnectionConfig(
             server_namespace=ffi_server_namespace, multi_device_aware=multi_device_aware
@@ -378,7 +390,9 @@ class Connection:
                 for listener in self._listeners:
                     listener.on_error(exc)
 
-    def _call_and_wait_for_event(self, event_type, func=None, args=None, *, timeout=None):
+    def _call_and_wait_for_event(
+        self, event_type, func=None, args=None, *, timeout=None
+    ):
         """Wait for an event after an (optional) function call.
 
         If a function is supplied, it will be called with the specified args. This adds the

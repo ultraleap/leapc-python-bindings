@@ -72,6 +72,7 @@ def sanitise_leapc_header(input_str):
 
     return "\n".join(new_lines)
 
+
 leapc_header_fpath = os.path.join(_RESOURCE_DIRECTORY, "LeapC.h")
 print(leapc_header_fpath)
 with open(leapc_header_fpath) as fp:
@@ -86,7 +87,11 @@ cffi_src_fpath = os.path.join(os.path.dirname(__file__), "cffi_src.h")
 with open(cffi_src_fpath) as fp:
     cffi_src = fp.read()
 
-extra_link_args = {"Windows": [], "Linux": ["-Wl,-rpath=$ORIGIN"], "Darwin": ["-Wl,-rpath,@loader_path"]}
+extra_link_args = {
+    "Windows": [],
+    "Linux": ["-Wl,-rpath=$ORIGIN"],
+    "Darwin": ["-Wl,-rpath,@loader_path"],
+}
 
 os_libraries = {"Windows": ["LeapC"], "Linux": ["LeapC.5"], "Darwin": ["LeapC.5"]}
 

@@ -144,5 +144,7 @@ class Device:
         if not self._device:
             raise DeviceNotOpenException()
         camera_count_ptr = ffi.new("uint8_t *")
-        success_or_raise(libleapc.LeapGetDeviceCameraCount, self._device, camera_count_ptr)
+        success_or_raise(
+            libleapc.LeapGetDeviceCameraCount, self._device, camera_count_ptr
+        )
         return camera_count_ptr[0]

@@ -10,10 +10,14 @@ class MyListener(leap.Listener):
         print(f"Found device {str(event.device().serial())}")
 
     def on_tracking_event(self, event):
-        print(f"Frame {str(event.tracking_frame_id)} with {str(len(event.hands))} hands.")
+        print(
+            f"Frame {str(event.tracking_frame_id)} with {str(len(event.hands))} hands."
+        )
         for hand in event.hands:
             hand_type = "left" if str(hand.type) == "HandType.Left" else "right"
-            print(f"Hand id {str(hand.id)} is a {hand_type} hand with position ({str(hand.palm.position.x)}, {str(hand.palm.position.y)}, {str(hand.palm.position.z)}).")
+            print(
+                f"Hand id {str(hand.id)} is a {hand_type} hand with position ({str(hand.palm.position.x)}, {str(hand.palm.position.y)}, {str(hand.palm.position.z)})."
+            )
 
 
 def main():

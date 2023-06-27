@@ -22,8 +22,12 @@ def get_server_status(timeout):
         for i in range(server_status_pp[0].device_count):
             result["devices"].append(
                 {
-                    "serial": ffi.string(server_status_pp[0].devices[i].serial).decode("utf-8"),
-                    "type": ffi.string(server_status_pp[0].devices[i].type).decode("utf-8"),
+                    "serial": ffi.string(server_status_pp[0].devices[i].serial).decode(
+                        "utf-8"
+                    ),
+                    "type": ffi.string(server_status_pp[0].devices[i].type).decode(
+                        "utf-8"
+                    ),
                 }
             )
 
@@ -58,5 +62,7 @@ def interpolate_frame(connection, target_frame_time, buffer, frame_size):
 
 def get_extrinsic_matrix(connection, camera):
     matrix = ffi.new("float[]", 16)
-    libleapc.LeapExtrinsicCameraMatrix(connection.get_connection_ptr(), camera.value, matrix)
+    libleapc.LeapExtrinsicCameraMatrix(
+        connection.get_connection_ptr(), camera.value, matrix
+    )
     return matrix
