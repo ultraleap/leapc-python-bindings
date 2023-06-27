@@ -13,7 +13,7 @@ python-black:
   needs: [ ]
   script:
     - python3 -m venv python_env --system-site-packages
-    - python_env/bin/python -m pip install -r black==22.3.0
+    - python_env/bin/python -m pip install black==22.3.0
     - python_evn/bin/python -m black --diff --check /examples /src
 
 MacOSBuild:

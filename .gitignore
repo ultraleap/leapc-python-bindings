@@ -1,7 +1,11 @@
 dist/
 venv/
+build/
 src/leap.egg-info
 src/leap/leapc/*.h
 src/leap/leapc/*.dll
+src/leap/leapc/*.lib
 src/leap/leapc/*.dylib
 src/leap/leapc/*.so
+*.pyc
+*.pyd
