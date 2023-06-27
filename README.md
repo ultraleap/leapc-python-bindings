@@ -19,14 +19,21 @@ the case for you, you can use an environment variable to define the installation
 location.
 
 Example:
-`export LEAP_SDK_INSTALL_LOCATION="dssds"`
+`export LEAP_SDK_INSTALL_LOCATION="C:\Program Files\CustomDir\Ultraleap\LeapSDK"`
+
+By default, this path is the following for each operating system:
+
+- Windows: `C:\Program Files\Ultraleap\LeapSDK`
+- MacOS: `/Library/Application Support/Ultraleap/LeapSDK`
+- Linux: `TODO`
 
 How to install:
 ---------------
 
 1. `git clone [insert link here]`
 2. Create and activate a virtual environment
-3. `python -m build`
-4. `pip install dist/leap-0.0.1.tar.gz`
-5. `python examples/image_sample.py`
+3. `pip install -r requirements.txt`
+4. `python -m build`
+5. `pip install dist/leap-0.0.1.tar.gz`
+6. `python examples/image_sample.py`
 

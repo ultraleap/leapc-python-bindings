@@ -88,11 +88,12 @@ with open(cffi_src_fpath) as fp:
 
 extra_link_args = {"Windows": [], "Linux": ["-Wl,-rpath=$ORIGIN"], "Darwin": ["-Wl,-rpath,@loader_path"]}
 
-print(_RESOURCE_DIRECTORY)
+os_libraries = {"Windows": ["LeapC"], "Linux": ["LeapC.5"], "Darwin": ["LeapC.5"]}
+
 ffibuilder.set_source(
     "_leapc_cffi",
     cffi_src,
-    libraries=["LeapC.5"],
+    libraries=os_libraries[platform.system()],
     include_dirs=[_RESOURCE_DIRECTORY],
     library_dirs=[_RESOURCE_DIRECTORY],
     extra_link_args=extra_link_args[platform.system()],
