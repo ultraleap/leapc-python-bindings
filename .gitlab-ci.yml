@@ -1,0 +1,32 @@
+stages:
+  - analysis
+  - build
+  - test
+
+python-black:
+  stage: analysis
+  image: registry.ultrahaptics.com/leap-v5-platform/infrastructure/x64_linux_toolchain:v3.16.4
+  allow_failure: false
+  tags:
+    - docker
+  interruptible: true
+  needs: [ ]
+  script:
+    - python3 -m venv python_env --system-site-packages
+    - python_env/bin/python -m pip install -r black==22.3.0
+    - python_evn/bin/python -m black --diff --check /examples /src
+
+MacOSBuild:
+  stage: build
+  tags:
+    - platform-macm1
+  script:
+    - echo "Compiling the code..."
+    - echo "Compile complete."
+
+unit-test-job:
+  stage: test
+  script:
+    - echo "Running unit tests... This will take about 60 seconds."
+    - sleep 60
+    - echo "Code coverage is 90%"
