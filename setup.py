@@ -41,9 +41,9 @@ def setup_symlink(file_path, destination_path):
             os.symlink(file_path, destination_path)
         except OSError as error :
             print(error)
-            raise Exception("Error creating symlink to " + libleapc_path + ". You may need to run as administrator for the module build.")
+            raise Exception("Error creating symlink to " + file_path + ". You may need to run as administrator for the module build.")
     else:
-        print("Looking for LeapC library at: " + libleapc_path)
+        print("Looking for LeapC library at: " + file_path)
         raise Exception("No " + str(_OS_SHARED_OBJECT[platform.system()]) + " found, please ensure you "
                                                                             "have Ultraleap Gemini Hand Tracking installed, or define LEAPSDK_INSTALL_LOCATION environment "
                                                                             "variable to point to a LeapSDK directory.")
