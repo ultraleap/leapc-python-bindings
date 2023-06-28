@@ -25,7 +25,7 @@ _OS_DEFAULT_LIB_INSTALL_LOCATION = {
 
 _OS_SHARED_OBJECT = {
     "Windows": "LeapC.dll",
-    "Linux": "libLeapC.5.so",
+    "Linux": "libLeapC.so",
     "Darwin": "libLeapC.5.dylib"
 }
 
