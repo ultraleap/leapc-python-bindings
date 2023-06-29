@@ -3,6 +3,11 @@ stages:
   - build
   - test
 
+.common:
+  variables:
+    LIBTRACK_PROJECT_REF: leap-v5-platform/libtrack
+    LIBTRACK_REF: v5.13.2
+
 python-black:
   stage: analysis
   image: registry.ultrahaptics.com/leap-v5-platform/infrastructure/x64_linux_toolchain:v3.16.4
@@ -17,16 +22,20 @@ python-black:
     - python_env/bin/python -m black --diff --check examples src
 
 MacOSBuild:
+  extends: .common
   stage: build
   tags:
     - platform-macm1
+  before_script:
+    - pkgutil --expand-full $CI_PROJECT_DIR/Ultraleap-Hand-Tracking*.pkg $CI_PROJECT_DIR/unpack
   script:
-    - echo "Compiling the code..."
-    - echo "Compile complete."
-
-unit-test-job:
-  stage: test
-  script:
-    - echo "Running unit tests... This will take about 60 seconds."
-    - sleep 60
-    - echo "Code coverage is 90%"
+    - export LEAP_SDK_INSTALL_LOCATION="$CI_PRIJECT_DIR/Ultraleap-Hand-Tracking.pkg/Payload/Library/Application Support/Ultraleap/LeapSDK"
+    - mkdir build
+    - python3 -m venv build/venv --system-site-packages
+    - build/venv/bin/python -m pip install -r requirements.txt
+    - build/venv/bin/python -m build -o build/dist
+  needs:
+    - project: $LIBTRACK_PROJECT_REF
+      job: MacOSX64RelDebProd-LTS
+      ref: $LIBTRACK_REF
+      artifacts: true
