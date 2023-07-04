@@ -21,21 +21,94 @@ python-black:
     - python_env/bin/python -m pip install black==22.3.0
     - python_env/bin/python -m black --diff --check examples src
 
-MacOSBuild:
+Linux-Build:
   extends: .common
   stage: build
+  image: ubuntu:20.04
   tags:
-    - platform-macm1
+    - docker-builder
   before_script:
-    - pkgutil --expand-full $CI_PROJECT_DIR/Ultraleap-Hand-Tracking*.pkg $CI_PROJECT_DIR/unpack
+    - dpkg-deb -xv $CI_PROJECT_DIR/ultraleap-hand-tracking-service_*.deb $CI_PROJECT_DIR/unpack
+    - apt-get update
+    - apt-get install -y python3 python3-venv python3-dev build-essential
   script:
-    - export LEAP_SDK_INSTALL_LOCATION="$CI_PRIJECT_DIR/Ultraleap-Hand-Tracking.pkg/Payload/Library/Application Support/Ultraleap/LeapSDK"
+    - export LEAPC_HEADER_OVERRIDE="$CI_PROJECT_DIR/unpack/usr/include/LeapC.h"
+    - export LEAPC_LIB_OVERRIDE="$CI_PROJECT_DIR/unpack/usr/lib/ultraleap-hand-tracking-service/libLeapC.so"
     - mkdir build
     - python3 -m venv build/venv --system-site-packages
     - build/venv/bin/python -m pip install -r requirements.txt
     - build/venv/bin/python -m build -o build/dist
   needs:
     - project: $LIBTRACK_PROJECT_REF
-      job: MacOSX64RelDebProd-LTS
+      job: X64LinuxRelProd
+      ref: develop # This has to be develop as we don't build tagged linux
+      artifacts: true
+
+Windows-Build:
+  extends: .common
+  stage: build
+  tags:
+    - win
+    - ctk
+  before_script:
+    - mkdir unpack
+    - $env:zip_file = Get-ChildItem . -Filter "Ultraleap_*.zip"
+    - Expand-Archive -Path $env:zip_file -OutputPath unpack
+    - cd unpack/Ultraleap*
+    - $env:EXTRACTED_INSTALLER_PATH=$pwd.Path
+    - cd $env:CI_PROJECT_DIR
+  script:
+    - $env:LEAPSDK_INSTALL_LOCATION="$env:EXTRACTED_INSTALLER_PATH/LeapSDK"
+    - mkdir build
+    - python -m venv build/venv --system-site-packages
+    - build/venv/Scripts/python.exe -m pip install -r requirements.txt
+    - build/venv/Scripts/python.exe -m build -o build/dist
+  needs:
+    - project: $LIBTRACK_PROJECT_REF
+      job: WinRelDebProdLTS
+      ref: $LIBTRACK_REF
+      artifacts: true
+
+MacOS-Build:
+  extends: .common
+  stage: build
+  tags:
+    - platform-macm1
+  before_script:
+    - unzip $CI_PROJECT_DIR/Ultraleap-Hand-Tracking*.zip -d $CI_PROJECT_DIR/unpack
+    - cd $CI_PROJECT_DIR/unpack/Ultraleap*
+    - export EXTRACTED_INSTALLER_PATH="${PWD}"
+    - cd $CI_PROJECT_DIR
+  script:
+    - export LEAPSDK_INSTALL_LOCATION="$EXTRACTED_INSTALLER_PATH/LeapSDK"
+    - mkdir build
+    - python3 -m venv build/venv --system-site-packages
+    - build/venv/bin/python -m pip install -r requirements.txt
+    - build/venv/bin/python -m build -o build/dist
+  needs:
+    - project: $LIBTRACK_PROJECT_REF
+      job: MacOSArm64RelDebProd-LTS
+      ref: $LIBTRACK_REF
+      artifacts: true
+
+MacOS-Test:
+  extends: .common
+  stage: test
+  tags:
+    - platform-macm1
+  before_script:
+    - unzip $CI_PROJECT_DIR/Ultraleap-Hand-Tracking*.zip -d $CI_PROJECT_DIR/unpack
+    - cd $CI_PROJECT_DIR/unpack/Ultraleap*
+    - export EXTRACTED_INSTALLER_PATH="${PWD}"
+    - cd $CI_PROJECT_DIR
+  script:
+    - export LEAPSDK_INSTALL_LOCATION="$EXTRACTED_INSTALLER_PATH/LeapSDK"
+    - mkdir build
+    - python3 -m venv build/venv --system-site-packages
+    - build/venv/bin/python -m pip install .
+    - build/venv/bin/python examples/print_current_time.py
+  needs:
+    - project: $LIBTRACK_PROJECT_REF
+      job: MacOSArm64RelDebProd-LTS
       ref: $LIBTRACK_REF
       artifacts: true
