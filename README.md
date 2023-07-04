@@ -19,7 +19,7 @@ the case for you, you can use an environment variable to define the installation
 location.
 
 Example:
-`export LEAP_SDK_INSTALL_LOCATION="C:\Program Files\CustomDir\Ultraleap\LeapSDK"`
+`export LEAPSDK_INSTALL_LOCATION="C:\Program Files\CustomDir\Ultraleap\LeapSDK"`
 
 By default, this path is the following for each operating system:
 

@@ -29,6 +29,7 @@ _OS_SHARED_OBJECT = {
     "Darwin": "libLeapC.5.dylib"
 }
 
+
 def setup_symlink(file_path, destination_path):
     if os.path.islink(destination_path):
         os.unlink(destination_path)
@@ -51,7 +52,14 @@ def setup_symlink(file_path, destination_path):
 
 def gather_leap_sdk():
     _USER_DEFINED_INSTALL_LOCATION = os.getenv('LEAPSDK_INSTALL_LOCATION')
+    _OVERRIDE_HEADER_LOCATION = os.getenv('LEAPC_HEADER_OVERRIDE')
+    _OVERRIDE_LIB_LOCATION = os.getenv('LEAPC_LIB_OVERRIDE')
+
     if _USER_DEFINED_INSTALL_LOCATION is not None:
+        if platform.system() == "Linux":
+            print("Warning: The LeapSDK directory with everything in doesn't currently exist on linux. Consider using "
+                  "LEAPC_HEADER_OVERRIDE and LEAPC_LIB_OVERRIDE environment variables to point to required files.")
+
         print("User defined install location given, using: " + str(_USER_DEFINED_INSTALL_LOCATION) + " to generate "
               "bindings.")
         leapc_header_path = os.path.join(_USER_DEFINED_INSTALL_LOCATION, "include" if platform.system() != "Linux" else "", "LeapC.h")
@@ -59,6 +67,15 @@ def gather_leap_sdk():
     else:
         leapc_header_path = os.path.join(_OS_DEFAULT_HEADER_INSTALL_LOCATION[platform.system()], "include" if platform.system() != "Linux" else "", "LeapC.h")
         libleapc_path = os.path.join(_OS_DEFAULT_LIB_INSTALL_LOCATION[platform.system()], "lib" if platform.system() != "Linux" else "", "x64" if platform.system() == "Windows" else "", _OS_SHARED_OBJECT[platform.system()])
+
+    # Override
+    if _OVERRIDE_HEADER_LOCATION is not None:
+        print("Header override location given, using: " + str(_OVERRIDE_HEADER_LOCATION))
+        leapc_header_path = _OVERRIDE_HEADER_LOCATION
+
+    if _OVERRIDE_LIB_LOCATION is not None:
+        print("Library override location given, using: " + str(_OVERRIDE_LIB_LOCATION))
+        libleapc_path = _OVERRIDE_LIB_LOCATION
 
     # Copy the found header
     if os.path.exists(leapc_header_path):
@@ -73,7 +90,10 @@ def gather_leap_sdk():
 
     # On windows we also need to manage the LeapC.lib file
     if platform.system() == "Windows":
-        windows_lib_path = os.path.join(_OS_DEFAULT_LIB_INSTALL_LOCATION[platform.system()], "lib", "x64", "LeapC.lib")
+        if _USER_DEFINED_INSTALL_LOCATION is not None:
+            windows_lib_path = os.path.join(_USER_DEFINED_INSTALL_LOCATION, "lib", "x64", "LeapC.lib")
+        else:
+            windows_lib_path = os.path.join(_OS_DEFAULT_LIB_INSTALL_LOCATION[platform.system()], "lib", "x64", "LeapC.lib")
         symlink_lib_path = os.path.join(_RESOURCE_DIRECTORY, "LeapC.lib")
         setup_symlink(windows_lib_path, symlink_lib_path)
 
