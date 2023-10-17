@@ -92,7 +92,7 @@ class Device:
     @property
     def c_data_device_ref(self):
         """Get the LEAP_DEVICE_REF object for this object"""
-        return self._reference
+        return self._device_ref
 
     @property
     def c_data_device(self):

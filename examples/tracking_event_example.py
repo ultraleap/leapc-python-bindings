@@ -1,3 +1,9 @@
+"""Prints the palm position of each hand, every frame. When a device is 
+connected we set the tracking mode to desktop and then generate logs for 
+every tracking frame received. The events of creating a connection to the 
+server and a device being plugged in also generate logs. 
+"""
+
 import leap
 import time
 
@@ -7,16 +13,14 @@ class MyListener(leap.Listener):
         print("Connected")
 
     def on_device_event(self, event):
-        print(f"Found device {str(event.device().serial())}")
+        print(f"Found device {event.device().serial()}")
 
     def on_tracking_event(self, event):
-        print(
-            f"Frame {str(event.tracking_frame_id)} with {str(len(event.hands))} hands."
-        )
+        print(f"Frame {event.tracking_frame_id} with {len(event.hands)} hands.")
         for hand in event.hands:
             hand_type = "left" if str(hand.type) == "HandType.Left" else "right"
             print(
-                f"Hand id {str(hand.id)} is a {hand_type} hand with position ({str(hand.palm.position.x)}, {str(hand.palm.position.y)}, {str(hand.palm.position.z)})."
+                f"Hand id {hand.id} is a {hand_type} hand with position ({hand.palm.position.x}, {hand.palm.position.y}, {hand.palm.position.z})."
             )
 
 

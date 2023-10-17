@@ -2,6 +2,35 @@
 
 from .cstruct import CStruct
 from .enums import HandType
+from .leapc import ffi
+
+
+class FrameData:
+    """Wrapper which owns all the data required to read the Frame
+
+    A LEAP_TRACKING_EVENT has a fixed size, but some fields are pointers to memory stored
+    outside of the struct. This means the size required for all the information about a
+    frame is larger than the size of the struct.
+
+    This wrapper owns the buffer required for all of that data. Reading attributes or
+    items from this wrapper returns the corresponding item or wrapper on the underlying
+    LEAP_TRACKING_EVENT.
+
+    It is intended to by used in the TrackingEvent constructor.
+    """
+
+    def __init__(self, size):
+        self._buffer = ffi.new("char[]", size)
+        self._frame_ptr = ffi.cast("LEAP_TRACKING_EVENT*", self._buffer)
+
+    def __getattr__(self, name):
+        return getattr(self._frame_ptr, name)
+
+    def __getitem__(self, key):
+        return self._frame_ptr[key]
+
+    def frame_ptr(self):
+        return self._frame_ptr
 
 
 class FrameHeader(CStruct):
