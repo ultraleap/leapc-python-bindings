@@ -38,8 +38,6 @@ def get_server_status(timeout):
 
 
 def get_frame_size(connection, target_frame_time, target_frame_size):
-    # target_frame_size = ffi.new("uint64_t*")
-
     success_or_raise(
         libleapc.LeapGetFrameSize,
         connection.get_connection_ptr(),
@@ -48,9 +46,7 @@ def get_frame_size(connection, target_frame_time, target_frame_size):
     )
 
 
-def interpolate_frame(connection, target_frame_time, buffer, frame_size):
-    frame_ptr = ffi.cast("LEAP_TRACKING_EVENT*", buffer)
-
+def interpolate_frame(connection, target_frame_time, frame_ptr, frame_size):
     success_or_raise(
         libleapc.LeapInterpolateFrame,
         connection.get_connection_ptr(),
