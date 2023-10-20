@@ -85,16 +85,6 @@ class Listener:
     def on_imu_event(self, event):
         pass
 
-    # Store a dictionary of event to method names
-    # We store the names, intended to be obtained via getattr.
-    #
-    # This is because if we stored the methods themselves, then this stores the
-    # base class methods and the subclass methods are not called.
-    #
-    # An alternative would be to store lambda functions:
-    #   EventType.Connection: lambda x: x.on_connection_event
-    # TODO: Investigate whether this improves performance noticably
-    #
     _EVENT_CALLS = {
         EventType.EventTypeNone: "on_none_event",
         EventType.Connection: "on_connection_event",

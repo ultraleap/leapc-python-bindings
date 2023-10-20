@@ -6,7 +6,7 @@ stages:
 .common:
   variables:
     LIBTRACK_PROJECT_REF: leap-v5-platform/libtrack
-    LIBTRACK_REF: v5.13.2
+    LIBTRACK_REF: develop # Use develop until we have a tagged release including the leapc_cffi module
 
 python-black:
   stage: analysis
@@ -19,7 +19,7 @@ python-black:
   script:
     - python3 -m venv python_env --system-site-packages
     - python_env/bin/python -m pip install black==22.3.0
-    - python_env/bin/python -m black --diff --check examples src
+    - python_env/bin/python -m black --diff --check examples leapc-cffi leapc-python-api
 
 Linux-Build:
   extends: .common
@@ -37,11 +37,11 @@ Linux-Build:
     - mkdir build
     - python3 -m venv build/venv --system-site-packages
     - build/venv/bin/python -m pip install -r requirements.txt
-    - build/venv/bin/python -m build -o build/dist
+    - build/venv/bin/python -m build leapc-cffi -o build/dist
   needs:
     - project: $LIBTRACK_PROJECT_REF
       job: X64LinuxRelProd
-      ref: develop # This has to be develop as we don't build tagged linux
+      ref: $LIBTRACK_REF
       artifacts: true
 
 Windows-Build:
@@ -62,10 +62,10 @@ Windows-Build:
     - mkdir build
     - python -m venv build/venv --system-site-packages
     - build/venv/Scripts/python.exe -m pip install -r requirements.txt
-    - build/venv/Scripts/python.exe -m build -o build/dist
+    - build/venv/Scripts/python.exe -m build leapc-cffi -o build/dist
   needs:
     - project: $LIBTRACK_PROJECT_REF
-      job: WinRelDebProdLTS
+      job: WinRelDebProd
       ref: $LIBTRACK_REF
       artifacts: true
 
@@ -80,14 +80,14 @@ MacOS-Build:
     - export EXTRACTED_INSTALLER_PATH="${PWD}"
     - cd $CI_PROJECT_DIR
   script:
-    - export LEAPSDK_INSTALL_LOCATION="$EXTRACTED_INSTALLER_PATH/LeapSDK"
+    - export LEAPSDK_INSTALL_LOCATION="$EXTRACTED_INSTALLER_PATH/Ultraleap Hand Tracking.app/Contents/LeapSDK"
     - mkdir build
     - python3 -m venv build/venv --system-site-packages
     - build/venv/bin/python -m pip install -r requirements.txt
-    - build/venv/bin/python -m build -o build/dist
+    - build/venv/bin/python -m build leapc-cffi -o build/dist
   needs:
     - project: $LIBTRACK_PROJECT_REF
-      job: MacOSArm64RelDebProd-LTS
+      job: MacOSArm64RelDebProd
       ref: $LIBTRACK_REF
       artifacts: true
 
@@ -102,13 +102,14 @@ MacOS-Test:
     - export EXTRACTED_INSTALLER_PATH="${PWD}"
     - cd $CI_PROJECT_DIR
   script:
-    - export LEAPSDK_INSTALL_LOCATION="$EXTRACTED_INSTALLER_PATH/LeapSDK"
+    - export LEAPSDK_INSTALL_LOCATION="$EXTRACTED_INSTALLER_PATH/Ultraleap Hand Tracking.app/Contents/LeapSDK"
     - mkdir build
     - python3 -m venv build/venv --system-site-packages
-    - build/venv/bin/python -m pip install .
+    - build/venv/bin/python -m pip install cffi
+    - build/venv/bin/python -m pip install -e leapc-python-api
     - build/venv/bin/python examples/print_current_time.py
   needs:
     - project: $LIBTRACK_PROJECT_REF
-      job: MacOSArm64RelDebProd-LTS
+      job: MacOSArm64RelDebProd
       ref: $LIBTRACK_REF
       artifacts: true

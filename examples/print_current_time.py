@@ -1,3 +1,10 @@
+"""
+This is a simple example that prints the time according to the LeapC library.
+
+It does not require a tracking camera or the Ultraleap Tracking service to be running.
+
+This can be used to check if the python module has built successfully.
+"""
 import leap
 
 

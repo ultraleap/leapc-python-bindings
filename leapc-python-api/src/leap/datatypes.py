@@ -1,8 +1,8 @@
 """Wrappers for LeapC Data types"""
 
-from .cstruct import CStruct
+from .cstruct import LeapCStruct
 from .enums import HandType
-from .leapc import ffi
+from leapc_cffi import ffi
 
 
 class FrameData:
@@ -33,7 +33,7 @@ class FrameData:
         return self._frame_ptr
 
 
-class FrameHeader(CStruct):
+class FrameHeader(LeapCStruct):
     @property
     def frame_id(self):
         return self._data.frame_id
@@ -43,7 +43,7 @@ class FrameHeader(CStruct):
         return self._data.timestamp
 
 
-class Vector(CStruct):
+class Vector(LeapCStruct):
     def __getitem__(self, idx):
         return self._data.v[idx]
 
@@ -63,7 +63,7 @@ class Vector(CStruct):
         return self._data.z
 
 
-class Quaternion(CStruct):
+class Quaternion(LeapCStruct):
     def __getitem__(self, idx):
         return self._data.v[idx]
 
@@ -87,7 +87,7 @@ class Quaternion(CStruct):
         return self._data.w
 
 
-class Palm(CStruct):
+class Palm(LeapCStruct):
     @property
     def position(self):
         return Vector(self._data.position)
@@ -117,7 +117,7 @@ class Palm(CStruct):
         return Quaternion(self._data.orientation)
 
 
-class Bone(CStruct):
+class Bone(LeapCStruct):
     @property
     def prev_joint(self):
         return Vector(self._data.prev_joint)
@@ -135,7 +135,7 @@ class Bone(CStruct):
         return Quaternion(self._data.rotation)
 
 
-class Digit(CStruct):
+class Digit(LeapCStruct):
     @property
     def finger_id(self):
         return self._data.finger_id
@@ -165,7 +165,7 @@ class Digit(CStruct):
         return self._data.is_extended
 
 
-class Hand(CStruct):
+class Hand(LeapCStruct):
     @property
     def id(self):
         return self._data.id
@@ -235,7 +235,7 @@ class Hand(CStruct):
         return Bone(self._data.arm)
 
 
-class Image(CStruct):
+class Image(LeapCStruct):
     @property
     def matrix_version(self):
         return self._data.matrix_version
