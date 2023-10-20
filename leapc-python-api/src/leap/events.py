@@ -4,14 +4,14 @@ These are created so that the members can be accessed as our custom Python objec
 instead of C Objects.
 """
 
-from .cstruct import CStruct
+from .cstruct import LeapCStruct
 from .datatypes import FrameHeader, Hand, Vector, Image
 from .device import Device, DeviceStatusInfo
 from .enums import EventType, get_enum_entries, TrackingMode, PolicyFlag, IMUFlag
-from .leapc import ffi
+from leapc_cffi import ffi
 
 
-class EventMetadata(CStruct):
+class EventMetadata(LeapCStruct):
     def __init__(self, data):
         super().__init__(data)
         self._event_type = EventType(data.type)
@@ -26,13 +26,12 @@ class EventMetadata(CStruct):
         return self._device_id
 
 
-class Event(CStruct):
+class Event(LeapCStruct):
     """Base class for Events
 
     Events have extra 'type' and 'metadata' properties.
 
-    If an Event is used to create this event via the default constructor,
-    the metadata is not populated.
+    If an Event is constructed using the default constructor, the metadata is not populated.
 
     If the event is constructed using a `LEAP_CONNECTION_MESSAGE*` via the
     `from_connection_message` method, extra metadata will be available on

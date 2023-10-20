@@ -1,4 +1,4 @@
-class CStruct:
+class LeapCStruct:
     """Base class for objects which wrap around some raw C Data
 
     Classes which inherit from this should only be loose wrappers around

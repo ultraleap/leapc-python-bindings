@@ -1,8 +1,8 @@
 from contextlib import contextmanager
 
-from .leapc import ffi, libleapc
+from leapc_cffi import ffi, libleapc
 
-from .datatypes import CStruct
+from .datatypes import LeapCStruct
 from .enums import get_enum_entries, DevicePID, DeviceStatus
 from .exceptions import success_or_raise, LeapError, LeapCannotOpenDeviceError
 
@@ -37,7 +37,7 @@ class DeviceStatusInfo:
         return self._status_flags
 
 
-class DeviceInfo(CStruct):
+class DeviceInfo(LeapCStruct):
     @property
     def status(self):
         return DeviceStatusInfo(self._data.status)
@@ -144,7 +144,5 @@ class Device:
         if not self._device:
             raise DeviceNotOpenException()
         camera_count_ptr = ffi.new("uint8_t *")
-        success_or_raise(
-            libleapc.LeapGetDeviceCameraCount, self._device, camera_count_ptr
-        )
+        success_or_raise(libleapc.LeapGetDeviceCameraCount, self._device, camera_count_ptr)
         return camera_count_ptr[0]

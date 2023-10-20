@@ -12,9 +12,7 @@ from leap.event_listener import LatestEventListener
 from leap.datatypes import FrameData
 
 
-def wait_until(
-    condition: Callable[[], bool], timeout: float = 5, poll_delay: float = 0.01
-):
+def wait_until(condition: Callable[[], bool], timeout: float = 5, poll_delay: float = 0.01):
     start_time = timer()
     while timer() - start_time < timeout:
         if condition():

@@ -25,9 +25,7 @@ class MultiDeviceListener(leap.Listener):
             self.n_events += 1
 
 
-def wait_until(
-    condition: Callable[[], bool], timeout: float = 5, poll_delay: float = 0.01
-):
+def wait_until(condition: Callable[[], bool], timeout: float = 5, poll_delay: float = 0.01):
     start_time = timer()
     while timer() - start_time < timeout:
         if condition():

@@ -3,7 +3,7 @@
 import enum
 from keyword import iskeyword
 
-from .leapc import libleapc
+from leapc_cffi import libleapc
 
 
 def _generate_enum_entries(container, name):
