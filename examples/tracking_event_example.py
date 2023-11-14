@@ -13,7 +13,13 @@ class MyListener(leap.Listener):
         print("Connected")
 
     def on_device_event(self, event):
-        print(f"Found device {event.device().serial()}")
+        try:
+            with event.device.open():
+                info = event.device.get_info()
+        except leap.LeapCannotOpenDeviceError:
+            info = event.device.get_info()
+
+        print(f"Found device {info.serial}")
 
     def on_tracking_event(self, event):
         print(f"Frame {event.tracking_frame_id} with {len(event.hands)} hands.")
