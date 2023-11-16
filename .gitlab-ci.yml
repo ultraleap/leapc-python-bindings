@@ -44,6 +44,30 @@ Linux-Build:
       ref: $LIBTRACK_REF
       artifacts: true
 
+Linux-ARM-Build:
+  extends: .common
+  stage: build
+  image: registry.ultrahaptics.com/leap-v5-platform/infrastructure/arm64_linux_python:latest
+  tags:
+    - docker
+  before_script:
+    - export TAR_NAME=$(ls ultraleap-hand-tracking-service*.tar.gz)
+    - export EXTRACTED_DIR=${TAR_NAME%.tar.gz}
+    - tar -xf ultraleap-hand-tracking-service*.tar.gz
+    - apt-get update
+    - apt-get install -y python3 python3-venv python3-dev build-essential
+  script:
+    - export LEAPSDK_INSTALL_LOCATION="${PWD}/${EXTRACTED_DIR}/LeapSDK"
+    - mkdir build
+    - python3 -m venv build/venv --system-site-packages
+    - build/venv/bin/python -m pip install -r requirements.txt
+    - build/venv/bin/python -m build leapc-cffi -o build/dist
+  needs:
+    - project: $LIBTRACK_PROJECT_REF
+      job: ARM64LinuxRelProd-PythonBindings
+      ref: $LIBTRACK_REF
+      artifacts: true
+
 Windows-Build:
   extends: .common
   stage: build
