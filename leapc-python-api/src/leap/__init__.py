@@ -10,20 +10,30 @@ import os
 _OS_DEFAULT_CFFI_INSTALL_LOCATION = {
     "Windows": "C:/Program Files/Ultraleap/LeapSDK",
     "Linux": "/usr/lib/ultraleap-hand-tracking-service",
+    "Linux-ARM": "/opt/ultraleap/LeapSDK",
     "Darwin": "/Applications/Ultraleap Hand Tracking.app/Contents/LeapSDK",
 }
 
 _OS_REQUIRED_CFFI_FILES = {
-    "Windows": [],
-    "Linux": [],
+    "Windows": ["__init__.py", "LeapC.lib", "LeapC.dll"],
+    "Linux": ["__init__.py", "libLeapC.so", "libLeapC.so.5"],
+    "Linux-ARM": ["__init__.py", "libLeapC.so", "libLeapC.so.5"],
     "Darwin": ["__init__.py", "libLeapC.5.dylib", "libLeapC.dylib"],
 }
 
 _OS_CFFI_SHARED_OBJECT_PATTERN = {
     "Windows": "_leapc_cffi*.pyd",
     "Linux": "_leapc_cffi*.so",
+    "Linux-ARM": "_leapc_cffi*.so",
     "Darwin": "_leapc_cffi*.so",
 }
+
+
+def get_system():
+    if platform.system() == "Linux" and platform.machine() == "aarch64":
+        return "Linux-ARM"
+    else:
+        return platform.system()
 
 
 def check_required_files(cffi_dir):
@@ -34,12 +44,12 @@ def check_required_files(cffi_dir):
     shared_object_files = [
         f
         for f in directory_files
-        if fnmatch.fnmatch(f, _OS_CFFI_SHARED_OBJECT_PATTERN[platform.system()])
+        if fnmatch.fnmatch(f, _OS_CFFI_SHARED_OBJECT_PATTERN[get_system()])
     ]
     if len(shared_object_files) < 1:
         return False
 
-    for file in _OS_REQUIRED_CFFI_FILES[platform.system()]:
+    for file in _OS_REQUIRED_CFFI_FILES[get_system()]:
         if file not in directory_files:
             return False
 
@@ -48,7 +58,7 @@ def check_required_files(cffi_dir):
 
 _OVERRIDE_LEAPSDK_LOCATION = os.getenv("LEAPSDK_INSTALL_LOCATION")
 
-cffi_location = _OS_DEFAULT_CFFI_INSTALL_LOCATION[platform.system()]
+cffi_location = _OS_DEFAULT_CFFI_INSTALL_LOCATION[get_system()]
 if _OVERRIDE_LEAPSDK_LOCATION is not None:
     cffi_location = _OVERRIDE_LEAPSDK_LOCATION
 

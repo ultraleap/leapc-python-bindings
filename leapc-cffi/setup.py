@@ -5,6 +5,14 @@ import shutil
 
 _HERE = os.path.abspath(os.path.dirname(__file__))
 
+
+def get_system():
+    if platform.system() == "Linux" and platform.machine() == "aarch64":
+        return "Linux-ARM"
+    else:
+        return platform.system()
+
+
 with open(os.path.join(_HERE, "README.md"), "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
@@ -14,16 +22,23 @@ _RESOURCE_DIRECTORY = os.path.join(_HERE, "src/leapc_cffi")
 _OS_DEFAULT_HEADER_INSTALL_LOCATION = {
     "Windows": "C:/Program Files/Ultraleap/LeapSDK",
     "Linux": "/usr/include",
+    "Linux-ARM": "/opt/ultraleap/LeapSDK",
     "Darwin": "/Applications/Ultraleap Hand Tracking.app/Contents/LeapSDK",
 }
 
 _OS_DEFAULT_LIB_INSTALL_LOCATION = {
-    "Windows": _OS_DEFAULT_HEADER_INSTALL_LOCATION[platform.system()],
+    "Windows": _OS_DEFAULT_HEADER_INSTALL_LOCATION[get_system()],
     "Linux": "/usr/lib/ultraleap-hand-tracking-service",
-    "Darwin": _OS_DEFAULT_HEADER_INSTALL_LOCATION[platform.system()],
+    "Linux-ARM": _OS_DEFAULT_HEADER_INSTALL_LOCATION[get_system()],
+    "Darwin": _OS_DEFAULT_HEADER_INSTALL_LOCATION[get_system()],
 }
 
-_OS_SHARED_OBJECT = {"Windows": "LeapC.dll", "Linux": "libLeapC.so", "Darwin": "libLeapC.5.dylib"}
+_OS_SHARED_OBJECT = {
+    "Windows": "LeapC.dll",
+    "Linux": "libLeapC.so",
+    "Linux-ARM": "libLeapC.so",
+    "Darwin": "libLeapC.5.dylib",
+}
 
 
 def setup_symlink(file_path, destination_path):
@@ -35,7 +50,7 @@ def setup_symlink(file_path, destination_path):
 
     if os.path.exists(file_path):
         try:
-            if platform.system() != "Windows":
+            if get_system() != "Windows":
                 os.symlink(file_path, destination_path)
             else:
                 # Just copy it for windows, so we don't need administrator privileges
@@ -44,7 +59,7 @@ def setup_symlink(file_path, destination_path):
             print(error)
             error_msg = (
                 "Error "
-                + ("creating symlink to " if platform.system() != "Windows" else "copying file ")
+                + ("creating symlink to " if get_system() != "Windows" else "copying file ")
                 + file_path
                 + "."
             )
@@ -52,7 +67,7 @@ def setup_symlink(file_path, destination_path):
     else:
         print("Looking for LeapC library at: " + file_path)
         raise Exception(
-            "No " + str(_OS_SHARED_OBJECT[platform.system()]) + " found, please ensure you "
+            "No " + str(_OS_SHARED_OBJECT[get_system()]) + " found, please ensure you "
             "have Ultraleap Gemini Hand Tracking installed, or define LEAPSDK_INSTALL_LOCATION environment "
             "variable to point to a LeapSDK directory."
         )
@@ -64,7 +79,7 @@ def gather_leap_sdk():
     _OVERRIDE_LIB_LOCATION = os.getenv("LEAPC_LIB_OVERRIDE")
 
     if _USER_DEFINED_INSTALL_LOCATION is not None:
-        if platform.system() == "Linux":
+        if get_system() == "Linux":
             print(
                 "Warning: The LeapSDK directory with everything in doesn't currently exist on linux. Consider using "
                 "LEAPC_HEADER_OVERRIDE and LEAPC_LIB_OVERRIDE environment variables to point to required files."
@@ -78,26 +93,26 @@ def gather_leap_sdk():
         )
         leapc_header_path = os.path.join(
             _USER_DEFINED_INSTALL_LOCATION,
-            "include" if platform.system() != "Linux" else "",
+            "include" if get_system() != "Linux" else "",
             "LeapC.h",
         )
         libleapc_path = os.path.join(
             _USER_DEFINED_INSTALL_LOCATION,
-            "lib" if platform.system() != "Linux" else "",
-            "x64" if platform.system() == "Windows" else "",
-            _OS_SHARED_OBJECT[platform.system()],
+            "lib" if get_system() != "Linux" else "",
+            "x64" if get_system() == "Windows" else "",
+            _OS_SHARED_OBJECT[get_system()],
         )
     else:
         leapc_header_path = os.path.join(
-            _OS_DEFAULT_HEADER_INSTALL_LOCATION[platform.system()],
-            "include" if platform.system() != "Linux" else "",
+            _OS_DEFAULT_HEADER_INSTALL_LOCATION[get_system()],
+            "include" if get_system() != "Linux" else "",
             "LeapC.h",
         )
         libleapc_path = os.path.join(
-            _OS_DEFAULT_LIB_INSTALL_LOCATION[platform.system()],
-            "lib" if platform.system() != "Linux" else "",
-            "x64" if platform.system() == "Windows" else "",
-            _OS_SHARED_OBJECT[platform.system()],
+            _OS_DEFAULT_LIB_INSTALL_LOCATION[get_system()],
+            "lib" if get_system() != "Linux" else "",
+            "x64" if get_system() == "Windows" else "",
+            _OS_SHARED_OBJECT[get_system()],
         )
 
     # Override
@@ -119,18 +134,18 @@ def gather_leap_sdk():
         )
 
     # Create a symlink for the shared object
-    symlink_path = os.path.join(_RESOURCE_DIRECTORY, _OS_SHARED_OBJECT[platform.system()])
+    symlink_path = os.path.join(_RESOURCE_DIRECTORY, _OS_SHARED_OBJECT[get_system()])
     setup_symlink(libleapc_path, symlink_path)
 
     # On windows we also need to manage the LeapC.lib file
-    if platform.system() == "Windows":
+    if get_system() == "Windows":
         if _USER_DEFINED_INSTALL_LOCATION is not None:
             windows_lib_path = os.path.join(
                 _USER_DEFINED_INSTALL_LOCATION, "lib", "x64", "LeapC.lib"
             )
         else:
             windows_lib_path = os.path.join(
-                _OS_DEFAULT_LIB_INSTALL_LOCATION[platform.system()], "lib", "x64", "LeapC.lib"
+                _OS_DEFAULT_LIB_INSTALL_LOCATION[get_system()], "lib", "x64", "LeapC.lib"
             )
         symlink_lib_path = os.path.join(_RESOURCE_DIRECTORY, "LeapC.lib")
         setup_symlink(windows_lib_path, symlink_lib_path)
