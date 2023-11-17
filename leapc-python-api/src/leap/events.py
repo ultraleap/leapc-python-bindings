@@ -31,7 +31,7 @@ class Event(LeapCStruct):
 
     Events have extra 'type' and 'metadata' properties.
 
-    If an Event is constructed using the default constructor, the metadata is not populated.
+    If the Event is constructed using the default constructor, the metadata is not populated.
 
     If the event is constructed using a `LEAP_CONNECTION_MESSAGE*` via the
     `from_connection_message` method, extra metadata will be available on

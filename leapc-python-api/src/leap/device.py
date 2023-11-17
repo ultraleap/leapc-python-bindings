@@ -12,11 +12,10 @@ class DeviceNotOpenException(LeapError):
 
 
 class DeviceStatusInfo:
-    def __init__(self, status):
+    def __init__(self, status: ffi.CData):
         """Create the DeviceStatusInfo
 
         :param status: The CData defining the status
-        :type status: ffi.uint32_t
         """
         self._status_flags = get_enum_entries(DeviceStatus, status)
 
@@ -24,11 +23,10 @@ class DeviceStatusInfo:
     def _get_flags(status_int):
         return get_enum_entries(DeviceStatus, status_int)
 
-    def check(self, flag):
+    def check(self, flag: DeviceStatus):
         """Check if the flag is in the current flags
 
         :param flag: The flag to check
-        :type flag: DeviceStatus
         """
         return flag in self._status_flags
 

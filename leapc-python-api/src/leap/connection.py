@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 import sys
 import threading
+from typing import Dict, Optional, List, Callable
 from timeit import default_timer as timer
 import time
 import json
@@ -13,9 +14,11 @@ from .enums import (
     EventType,
     RS as LeapRS,
     ConnectionConfig as ConnectionConfigEnum,
+    TrackingMode,
+    PolicyFlag,
 )
-from .event_listener import LatestEventListener
-from .events import create_event
+from .event_listener import LatestEventListener, Listener
+from .events import create_event, Event
 from .exceptions import (
     create_exception,
     success_or_raise,
@@ -33,7 +36,12 @@ class ConnectionConfig:
     Allows a user to enable multi device functionality prior to connection.
     """
 
-    def __init__(self, *, server_namespace=None, multi_device_aware=False):
+    def __init__(
+        self,
+        *,
+        server_namespace: Optional[Dict[str, str]] = None,
+        multi_device_aware: bool = False,
+    ):
         self._data_ptr = ffi.new("LEAP_CONNECTION_CONFIG*")
         self._data_ptr.server_namespace = server_namespace
         self._data_ptr.flags = 0
@@ -46,10 +54,8 @@ class ConnectionConfig:
 class Connection:
     """Connection to a Leap Server
 
-    :param listeners: A list of event listeners. Defaults to None
-    :type listeners: List of leap.Listeners, optional
+    :param listeners: A List of event listeners. Defaults to None
     :param poll_timeout: A timeout of poll messages, in seconds. Defaults to 1 second.
-    :type timeout: float, optional
     :param response_timeout: A timeout to wait for specific events in response to events.
         Defaults to 10 seconds.
     """
@@ -57,11 +63,11 @@ class Connection:
     def __init__(
         self,
         *,
-        server_namespace=None,
-        multi_device_aware=False,
-        listeners=None,
-        poll_timeout=1,
-        response_timeout=10,
+        server_namespace: Optional[Dict[str, str]] = None,
+        multi_device_aware: bool = False,
+        listeners: Optional[List[Listener]] = None,
+        poll_timeout: float = 1,
+        response_timeout: float = 10,
     ):
         if listeners is None:
             listeners = []
@@ -85,23 +91,19 @@ class Connection:
             # could be raised in the __init__ method, before this has been assigned.
             self._destroy_connection(self._connection_ptr)
 
-    def add_listener(self, listener):
+    def add_listener(self, listener: Listener):
         self._listeners.append(listener)
 
-    def remove_listener(self, listener):
+    def remove_listener(self, listener: Listener):
         self._listeners.remove(listener)
 
-    def poll(self, timeout=None):
+    def poll(self, timeout: Optional[float] = None) -> Event:
         """Manually poll the connection from this thread
 
         Do not notify listeners about the result of this poll.
 
         :param timeout: The timeout of the poll, in seconds.
             Defaults to the number the Connection was initialised with.
-        :type timeout: number, optional.
-        :return: The returned event from the poll
-        :rtype: leap.Event
-        :raises: leap.LeapError (or subclasses) if the poll fails
         """
         if self._poll_thread is not None:
             raise LeapConcurrentPollError
@@ -113,7 +115,13 @@ class Connection:
         success_or_raise(libleapc.LeapPollConnection, self._connection_ptr[0], timeout, event_ptr)
         return create_event(event_ptr)
 
-    def poll_until(self, event_type, *, timeout=None, individual_poll_timeout=None):
+    def poll_until(
+        self,
+        event_type: EventType,
+        *,
+        timeout: Optional[float] = None,
+        individual_poll_timeout: Optional[float] = None,
+    ) -> Event:
         """Manually poll the connection until a specific event type is received
 
         Discard all other events. Do not notify listeners about the results of any polls.
@@ -130,12 +138,10 @@ class Connection:
                 pass
         raise LeapTimeoutError
 
-    def wait_for(self, event_type, *, timeout=None):
+    def wait_for(self, event_type: EventType, *, timeout: Optional[float] = None) -> Event:
         """Wait until the specified event type is emitted
 
-        Requires the connection to be open.
-
-        Returns the next event of the requested tyoe.
+        Returns the next event of the requested type.
         """
         if not self._is_open:
             raise LeapNotConnectedError
@@ -143,17 +149,15 @@ class Connection:
         return self._call_and_wait_for_event(event_type, func=None, timeout=timeout)
 
     @contextmanager
-    def open(self, *, auto_poll=True, timeout=10):
+    def open(self, *, auto_poll: bool = True, timeout: float = 10):
         """Open the Connection
 
         Optionally starts a separate thread which continually polls the connection.
 
         :param auto_poll: Whether to launch a separate thread to poll the connection.
             Defaults to True.
-        :type auto_poll: bool, optional
         :param timeout: A timeout for initial connection in seconds. This may be greater than
             the usual poll timeout. Defaults to 10s.
-        :type timeout: float, optional
         """
         self.connect(auto_poll=auto_poll, timeout=timeout)
         try:
@@ -161,7 +165,7 @@ class Connection:
         finally:
             self.disconnect()
 
-    def connect(self, *, auto_poll=True, timeout=10):
+    def connect(self, *, auto_poll: bool = True, timeout: float = 10):
         """Open the connection
 
         The caller is responsible for disconnecting afterwards.
@@ -170,10 +174,8 @@ class Connection:
 
         :param auto_poll: Whether to launch a separate thread to poll the connection.
             Defaults to True.
-        :type auto_poll: bool, optional
         :param timeout: A timeout for initial connection in seconds. This may be greater than
             the usual poll timeout. Defaults to 10s.
-        :type timeout: float, optional
         """
         if self._is_open:
             raise LeapConnectionAlreadyOpen
@@ -187,35 +189,29 @@ class Connection:
         self._stop_poll_thread()
         self._close_connection()
 
-    def set_tracking_mode(self, mode):
-        """Set the Server tracking mode
-
-        :param mode: The mode to set
-        :type mode: TrackingMode
-        """
+    def set_tracking_mode(self, mode: TrackingMode):
+        """Set the Server tracking mode"""
         success_or_raise(libleapc.LeapSetTrackingMode, self._connection_ptr[0], mode.value)
 
-    def get_tracking_mode(self):
-        """Get the Server tracking mode
-
-        :rtype: TrackingMode
-        """
+    def get_tracking_mode(self) -> TrackingMode:
+        """Get the Server tracking mode"""
         func = success_or_raise
         args = (libleapc.LeapGetTrackingMode, self._connection_ptr[0])
 
         event = self._call_and_wait_for_event(EventType.TrackingMode, func, args)
         return event.current_tracking_mode
 
-    def set_policy_flags(self, flags_to_set=None, flags_to_clear=None):
+    def set_policy_flags(
+        self,
+        flags_to_set: Optional[List[PolicyFlag]] = None,
+        flags_to_clear: Optional[List[PolicyFlag]] = None,
+    ) -> List[PolicyFlag]:
         """Set the policy flags
 
         Returns a list of current policy flags.
 
         :param flags_to_set: A list of PolicyFlags to set. Defaults to None.
-        :type flags_to_set: list(PolicyFlag), optional
         :param flags_to_clear: A list of PolicyFlags to clear. Defaults to None.
-        :type flags_to_clear: list(PolicyFlag), optional
-        :rtype: list(PolicyFlag)
         """
         to_set = 0
         if flags_to_set is not None:
@@ -232,19 +228,12 @@ class Connection:
         event = self._call_and_wait_for_event(EventType.Policy, func, args)
         return event.current_policy_flags
 
-    def get_policy_flags(self):
-        """Get the current policy flags
-
-        :rtype: list(PolicyFlag)
-        """
+    def get_policy_flags(self) -> List[PolicyFlag]:
+        """Get the current policy flags"""
         return self.set_policy_flags()
 
-    def get_status(self):
-        """Get information about the current connection
-
-        :return: The current connection information
-        :rtype: ConnectionStatus
-        """
+    def get_status(self) -> ConnectionStatus:
+        """Get information about the current connection"""
         connection_info_ptr = ffi.new("LEAP_CONNECTION_INFO*")
         size_of_info = ffi.sizeof(connection_info_ptr[0])
         connection_info_ptr.size = size_of_info
@@ -253,11 +242,8 @@ class Connection:
         )
         return ConnectionStatus(connection_info_ptr.status)
 
-    def get_devices(self):
-        """Get the devices which the Server knows about
-
-        :rtype: list(Device)
-        """
+    def get_devices(self) -> List[Device]:
+        """Get the devices which the Server knows about"""
         count_ptr = ffi.new("uint32_t*")
         success_or_raise(libleapc.LeapGetDeviceList, self._connection_ptr[0], ffi.NULL, count_ptr)
         devices_ptr = ffi.new("LEAP_DEVICE_REF[]", count_ptr[0])
@@ -266,13 +252,11 @@ class Connection:
         )
         return [Device(devices_ptr[i], owner=devices_ptr) for i in range(count_ptr[0])]
 
-    def set_primary_device(self, device, unsubscribe_others=False):
+    def set_primary_device(self, device: Device, unsubscribe_others: bool = False):
         """Sets the primary device
 
         :param device: The device to make primary
-        :type device: Device
         :param unsubscribe_others: Whether to unsubscribe other devices
-        :type unsubscribe_others: bool
         """
         success_or_raise(
             libleapc.LeapSetPrimaryDevice,
@@ -281,24 +265,22 @@ class Connection:
             unsubscribe_others,
         )
 
-    def get_connection_ptr(self):
+    def get_connection_ptr(self) -> ffi.CData:
         return self._connection_ptr[0]
 
-    def subscribe_events(self, device):
+    def subscribe_events(self, device: Device):
         """Subscribe to events from the device
 
         :param device: The device to subscribe to
-        :type device: Device
         """
         success_or_raise(
             libleapc.LeapSubscribeEvents, self._connection_ptr[0], device.c_data_device
         )
 
-    def unsubscribe_events(self, device):
+    def unsubscribe_events(self, device: Device):
         """Unsubscribe from events from the device
 
         :param device: The device to unsubscribe from
-        :type device: Device
         """
         success_or_raise(
             libleapc.LeapUnsubscribeEvents,
@@ -307,8 +289,9 @@ class Connection:
         )
 
     @staticmethod
-    def _create_connection(server_namespace=None, multi_device_aware=False):
-        # Create the connection
+    def _create_connection(
+        server_namespace: Optional[Dict] = None, multi_device_aware: bool = False
+    ) -> ffi.CData:
         connection_ptr = ffi.new("LEAP_CONNECTION*")
         ffi_server_namespace = ffi.new("char []", json.dumps(server_namespace).encode("ascii"))
 
@@ -323,7 +306,7 @@ class Connection:
         return connection_ptr
 
     @staticmethod
-    def _destroy_connection(connection_ptr):
+    def _destroy_connection(connection_ptr: ffi.CData):
         # Destroy the connection. Must be done on all created connections.
         libleapc.LeapDestroyConnection(connection_ptr[0])
 
@@ -340,7 +323,7 @@ class Connection:
             libleapc.LeapCloseConnection(self._connection_ptr[0])
         self._is_open = False
 
-    def _start_poll_thread(self, startup_timeout):
+    def _start_poll_thread(self, startup_timeout: float):
         self._poll_thread = threading.Thread(target=self._poll_loop)
         try:
             self._call_and_wait_for_event(
@@ -380,7 +363,14 @@ class Connection:
                 for listener in self._listeners:
                     listener.on_error(exc)
 
-    def _call_and_wait_for_event(self, event_type, func=None, args=None, *, timeout=None):
+    def _call_and_wait_for_event(
+        self,
+        event_type: EventType,
+        func: Optional[Callable] = None,
+        args: Optional[tuple] = None,
+        *,
+        timeout: Optional[float] = None,
+    ) -> Event:
         """Wait for an event after an (optional) function call.
 
         If a function is supplied, it will be called with the specified args. This adds the
