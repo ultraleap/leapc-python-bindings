@@ -1,3 +1,6 @@
+from leapc_cffi import ffi
+
+
 class LeapCStruct:
     """Base class for objects which wrap around some raw C Data
 
@@ -7,10 +10,10 @@ class LeapCStruct:
     :param data: The raw CData
     """
 
-    def __init__(self, data):
+    def __init__(self, data: ffi.CData):
         self._data = data
 
     @property
-    def c_data(self):
+    def c_data(self) -> ffi.CData:
         """Get the raw C data"""
         return self._data

@@ -22,7 +22,7 @@ Building Errors
 
 This will try to use the LeapC shared object from your install of Gemini Hand Tracking. This module assumes that you 
 have the Leap SDK installed in the default location. If this is not the case for you, you can use an environment 
-variable for define the installation location. Define the environment variable `LEAPSDK_INSTALL_LOCATION` to the path of
+variable to define the installation location. Define the environment variable `LEAPSDK_INSTALL_LOCATION` to the path of
 the `LeapSDK` folder, if you have installed to a custom location or moved it somewhere else.
 
 Example:
@@ -30,5 +30,6 @@ Example:
 
 By default, this path is the following for each operating system:
 - Windows: `C:/Program Files/Ultraleap/LeapSDK`
-- Linux: `/usr/lib/ultraleap-hand-tracking-service`
+- Linux x64: `/usr/lib/ultraleap-hand-tracking-service`
+- Linux ARM: `/opt/ultraleap/LeapSDK`
 - Darwin: `/Applications/Ultraleap Hand Tracking.app/Contents/LeapSDK`

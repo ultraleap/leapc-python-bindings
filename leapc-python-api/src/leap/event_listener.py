@@ -1,4 +1,8 @@
+from typing import Optional
+
+from .events import Event
 from .enums import EventType
+from .exceptions import LeapError
 
 
 class Listener:
@@ -7,7 +11,7 @@ class Listener:
     This should be subclassed and methods overridden to handle events and errors.
     """
 
-    def on_event(self, event):
+    def on_event(self, event: Event):
         """Called every event
 
         Note that if this method is overridden, the more specific event functions will not be called
@@ -15,74 +19,74 @@ class Listener:
         """
         getattr(self, self._EVENT_CALLS[event.type])(event)
 
-    def on_error(self, error):
+    def on_error(self, error: LeapError):
         """If an error occurs in polling, the Exception is passed to this function"""
         pass
 
-    def on_none_event(self, event):
+    def on_none_event(self, event: Event):
         pass
 
-    def on_connection_event(self, event):
+    def on_connection_event(self, event: Event):
         pass
 
-    def on_connection_lost_event(self, event):
+    def on_connection_lost_event(self, event: Event):
         pass
 
-    def on_device_event(self, event):
+    def on_device_event(self, event: Event):
         pass
 
-    def on_device_failure_event(self, event):
+    def on_device_failure_event(self, event: Event):
         pass
 
-    def on_policy_event(self, event):
+    def on_policy_event(self, event: Event):
         pass
 
-    def on_tracking_event(self, event):
+    def on_tracking_event(self, event: Event):
         pass
 
-    def on_image_request_error_event(self, event):
+    def on_image_request_error_event(self, event: Event):
         pass
 
-    def on_image_complete_event(self, event):
+    def on_image_complete_event(self, event: Event):
         pass
 
-    def on_log_event(self, event):
+    def on_log_event(self, event: Event):
         pass
 
-    def on_device_lost_event(self, event):
+    def on_device_lost_event(self, event: Event):
         pass
 
-    def on_config_response_event(self, event):
+    def on_config_response_event(self, event: Event):
         pass
 
-    def on_config_change_event(self, event):
+    def on_config_change_event(self, event: Event):
         pass
 
-    def on_device_status_change_event(self, event):
+    def on_device_status_change_event(self, event: Event):
         pass
 
-    def on_dropped_frame_event(self, event):
+    def on_dropped_frame_event(self, event: Event):
         pass
 
-    def on_image_event(self, event):
+    def on_image_event(self, event: Event):
         pass
 
-    def on_point_mapping_change_event(self, event):
+    def on_point_mapping_change_event(self, event: Event):
         pass
 
-    def on_tracking_mode_event(self, event):
+    def on_tracking_mode_event(self, event: Event):
         pass
 
-    def on_log_events(self, event):
+    def on_log_events(self, event: Event):
         pass
 
-    def on_head_pose_event(self, event):
+    def on_head_pose_event(self, event: Event):
         pass
 
-    def on_eyes_event(self, event):
+    def on_eyes_event(self, event: Event):
         pass
 
-    def on_imu_event(self, event):
+    def on_imu_event(self, event: Event):
         pass
 
     _EVENT_CALLS = {
@@ -112,10 +116,10 @@ class Listener:
 
 
 class LatestEventListener(Listener):
-    def __init__(self, target):
+    def __init__(self, target: EventType):
         self._target = target
-        self.event = None
+        self.event: Optional[Event] = None
 
-    def on_event(self, event):
+    def on_event(self, event: Event):
         if event.type == self._target:
             self.event = event

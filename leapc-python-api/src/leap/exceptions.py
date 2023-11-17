@@ -86,13 +86,12 @@ class LeapCannotOpenDeviceError(LeapError):
     pass
 
 
-def create_exception(result, *args, **kwargs):
+def create_exception(result: LeapRS, *args, **kwargs):
     """Create an exception from a LeapRS object
 
     Extra args and kwargs are forwarded to the Exception constructor.
 
     :param result: The result to create an Exception from
-    :type result: LeapRS
     """
     if result == LeapRS.Success:
         raise ValueError("Success is not an Error")

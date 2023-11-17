@@ -166,7 +166,7 @@ setuptools.setup(
     exclude_package_data={
         "": ["*.h", "*.lib", "scripts/*"]
     },  # Excluded from the installed package
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     setup_requires=["cffi"],
     install_requires=["cffi"],
     ext_package="leapc_cffi",  # The location that the CFFI module will be built

@@ -6,7 +6,7 @@ from keyword import iskeyword
 from leapc_cffi import libleapc
 
 
-def _generate_enum_entries(container, name):
+def _generate_enum_entries(container, name: str):
     """Generate enum entries based on the attributes of the container
 
     This searches for all attributes which start with "eLeap{name}_".
@@ -30,7 +30,7 @@ def _generate_enum_entries(container, name):
     prefix = f"eLeap{name}_"
     for attr in dir(container):
         if attr.startswith(prefix):
-            enum_key = attr[len(prefix) :]  # TODO: Use removeprefix (3.9+ only)
+            enum_key = attr[len(prefix) :]
             enum_value = getattr(container, attr)
             if iskeyword(enum_key):
                 enum_key = f"{name}{enum_key}"
@@ -57,7 +57,7 @@ class LeapEnum(type):
             Two = libleapc.eLeapFoo_Two
         ```
 
-    If an enum name is a Python keyword, it is will be prefixed with the class
+    If an enum name is a Python keyword, it will be prefixed with the class
     name. Eg, instead of generating `Foo.None` it will generate `Foo.FooNone`.
     """
 
