@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools >= 48.0", "cffi", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "leapc_cffi"
+version = "0.0.1"
+requires-python = ">= 3.8"
+authors = [{name = "Ultraleap", email = "hello@ultraleap.com"}]
+description = "Python CFFI bindings for LeapC"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+keywords = ["leapc", "leap", "ultraleap", "hand tracking"]
+
+[project.urls]
+Homepage = "https://ultraleap.com"
+Repository = "https://github.com/ultraleap/leapc-python-bindings.git"
+Issues = "https://github.com/ultraleap/leapc-python-bindings/issues"
+
+[tool.setuptools.exclude-package-data]
+"*" = ["*.h", "*.lib"]

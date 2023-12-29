@@ -153,22 +153,10 @@ def gather_leap_sdk():
 
 gather_leap_sdk()
 
-setuptools.setup(
-    name="leapc_cffi",
-    version="0.0.1",
-    author="Ultraleap",
-    description="Python CFFI bindings for LeapC",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    package_dir={"": "src"},
-    packages=setuptools.find_packages(where="src"),
-    include_package_data=True,
-    exclude_package_data={
-        "": ["*.h", "*.lib", "scripts/*"]
-    },  # Excluded from the installed package
-    python_requires=">=3.8",
-    setup_requires=["cffi"],
-    install_requires=["cffi"],
-    ext_package="leapc_cffi",  # The location that the CFFI module will be built
-    cffi_modules=["src/scripts/cffi_build.py:ffibuilder"],
-)
+if __name__ == "__main__":
+    setuptools.setup(
+        #CFFI
+        package_dir={"": "src"},
+        ext_package="leapc_cffi",  # The location that the CFFI module will be built
+        cffi_modules=["cffi_build.py:ffibuilder"],
+    )
