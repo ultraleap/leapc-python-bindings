@@ -12,7 +12,7 @@ from cffi import FFI
 _HERE = os.path.abspath(os.path.dirname(__file__))
 
 # The resource directory needs to contain the LeapC headers and libraries
-_RESOURCE_DIRECTORY = os.path.join(_HERE, "..", "leapc_cffi")
+_RESOURCE_DIRECTORY = os.path.join(_HERE, "src/leapc_cffi")
 
 
 def sanitise_leapc_header(input_str):
@@ -82,10 +82,6 @@ cffi_cdef = sanitise_leapc_header(leapc_header)
 ffibuilder = FFI()
 ffibuilder.cdef(cffi_cdef, packed=True)
 
-cffi_src_fpath = os.path.join(os.path.dirname(__file__), "cffi_src.h")
-with open(cffi_src_fpath) as fp:
-    cffi_src = fp.read()
-
 extra_link_args = {
     "Windows": [],
     "Linux": ["-Wl,-rpath=$ORIGIN"],
@@ -96,7 +92,7 @@ os_libraries = {"Windows": ["LeapC"], "Linux": ["LeapC"], "Darwin": ["LeapC.5"]}
 
 ffibuilder.set_source(
     "_leapc_cffi",
-    cffi_src,
+    "#include <LeapC.h>",
     libraries=os_libraries[platform.system()],
     include_dirs=[_RESOURCE_DIRECTORY],
     library_dirs=[_RESOURCE_DIRECTORY],
