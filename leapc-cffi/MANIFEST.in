@@ -1,2 +1,2 @@
-include src/leapc_cffi/*
-include src/scripts/*
+include cffi_build.py
+include src/leapc_cffi/LeapC.dll
