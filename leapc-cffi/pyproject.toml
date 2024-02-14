@@ -19,3 +19,6 @@ Issues = "https://github.com/ultraleap/leapc-python-bindings/issues"
 
 [tool.setuptools.exclude-package-data]
 "*" = ["*.h", "*.lib"]
+
+[tool.cibuildwheel]
+archs = ["auto64"]
